@@ -1,0 +1,29 @@
+#!/bin/zsh
+
+CURRENT_BRANCH=`git branch -l | grep "*" | cut -d " " -f 2`
+
+git_wip::usage()
+{
+  echo "Usage:"
+  echo "git wip (branch-name) (commit-message)"
+}
+git_wip::commit()
+{
+  MESSAGE="Start Branch for '$2'"
+  git pull origin $CURRENT_BRANCH
+  git checkout -b $1
+  git commit --allow-empty -m "Start Branch for '$2'"
+  git push origin $1
+}
+
+git_wip::pull_request()
+{
+  hub pull_request -h
+}
+# main
+if [ $# -ne 2 ]; then
+  git_wip::usage HELP
+  exit 2
+fi
+
+git_wip::commit "$@"
