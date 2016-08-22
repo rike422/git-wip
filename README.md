@@ -9,3 +9,4 @@ Usage:
 git wip (branch-name) (pull-request title)
 ```
 
+![gif](https://raw.githubusercontent.com/rike422/git-wip/master/git-wip-usage.gif)
