@@ -2,6 +2,14 @@
 
 git commands for the "work in progress" pull request
 
+## install
+
+with zplug
+
+```
+zplug "rike422/git-wip", if: "which hub"
+```
+
 ## Usage
 
 ```zsh
