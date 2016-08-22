@@ -1,0 +1,51 @@
+#!/bin/zsh
+
+CURRENT_BRANCH=`git branch -l | grep "*" | cut -d " " -f 2`
+ORIGIN_REPOSITORY=`git remote -v | grep origin`
+UPSTREAM_REPOSITORY=`git remote -v | grep upstream`
+
+git_wip::usage()
+{
+  echo "Usage:"
+  echo "git wip (branch-name) (commit-message)"
+}
+
+git_wip::error_remote_repository()
+{
+  echo "Error:"
+  echo "Please set remote ripositio "
+}
+
+git_wip::commit()
+{
+  MESSAGE="Start Branch for '$2'"
+  git pull origin $CURRENT_BRANCH
+  git checkout -b $1
+  git commit --allow-empty -m "Start Branch for '$2'"
+  git push origin $1
+}
+
+git_wip::pull_request()
+{
+  echo "  hub pull-request -b upstream/$CURRENT_BRANCH -h origin:$1"
+  hub pull-request -h origin/$CURRENT_BRANCH -b upstream/$CURRENT_BRANCH -h origin:$1
+}
+
+# main
+if [ $# -ne 2 ]; then
+  git_wip::usage HELP
+  exit 2
+fi
+
+if [ -z "$ORIGIN_REPOSITORY" ]; then
+  echo "Not a valid ref or remote: origin"
+  exit 2
+fi
+
+if [ -z "$UPSTREAM_REPOSITORY" ]; then
+  echo "Not a valid ref or remote: upstream"
+  exit 2
+fi
+
+git_wip::commit "$@"
+git_wip::pull_request "$@"
