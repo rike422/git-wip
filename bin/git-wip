@@ -1,0 +1,54 @@
+#!/bin/zsh
+
+CURRENT_BRANCH=`git branch -l | grep "*" | cut -d " " -f 2`
+ORIGIN_REPOSITORY=`git remote -v | grep origin`
+UPSTREAM_REPOSITORY=`git remote -v | grep upstream`
+BIN_PATH="$(cd "$(dirname "${(%):-%N}")" && pwd)"
+MESSAGES_DIR="$BIN_PATH/../messages/"
+git_wip::usage()
+{
+  echo "Usage:"
+  echo "git wip (branch-name) (pull-request title)"
+}
+
+git_wip::error_remote_repository()
+{
+  echo "Error:"
+  echo "Please set remote repository"
+}
+
+git_wip::commit()
+{
+  MESSAGE="Start Branch for '$2'"
+  git pull origin $CURRENT_BRANCH
+  git checkout -b $1
+  git commit --allow-empty -m "empty commit"
+  git push origin $1
+}
+
+git_wip::pull_request()
+{
+  echo "  hub pull-request -b $CURRENT_BRANCH"
+  sed -e "s/{{ title-message }}/$2/g" $MESSAGES_DIR/wip-title.txt > $MESSAGES_DIR/.wip-title.txt
+  hub pull-request --browse -F "$MESSAGES_DIR/.wip-title.txt" -b $CURRENT_BRANCH -h $1
+  rm $MESSAGES_DIR/.wip-title.txt
+}
+
+# main
+if [ $# -ne 2 ]; then
+  git_wip::usage HELP
+  exit 2
+fi
+
+if [ -z "$ORIGIN_REPOSITORY" ]; then
+  echo "Not a valid ref or remote: origin"
+  exit 2
+fi
+
+if [ -z "$UPSTREAM_REPOSITORY" ]; then
+  echo "Not a valid ref or remote: upstream"
+  exit 2
+fi
+
+git_wip::commit "$@"
+git_wip::pull_request "$@"
